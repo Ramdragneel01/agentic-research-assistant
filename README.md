@@ -29,6 +29,13 @@ pip install -r requirements.txt
 uvicorn api.main:app --reload --port 8002
 ```
 
+Optional backend security env vars:
+
+```bash
+RESEARCH_API_KEY=
+RATE_LIMIT_PER_MINUTE=90
+```
+
 ## Run Frontend
 
 ```bash
@@ -40,8 +47,8 @@ npm run dev -- --host 0.0.0.0 --port 4175
 ## API Endpoints
 
 1. `GET /health`
-2. `GET /research` (SSE stream)
-3. `POST /research/run` (sync execution)
+2. `GET /research` (SSE stream, protected when API key is configured)
+3. `POST /research/run` (sync execution, protected when API key is configured)
 4. `GET /metrics`
 
 ## Validation Commands
@@ -66,3 +73,5 @@ cd frontend && npm run build
 3. `docs/DEPLOYMENT.md`
 4. `docs/TESTING.md`
 5. `docs/PROMPT_GUIDE.md`
+6. `.claude/CLAUDE.md`
+7. `.github/workflows/release.yml`
