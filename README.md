@@ -37,6 +37,9 @@ Optional backend security env vars:
 ```bash
 RESEARCH_API_KEY=
 RATE_LIMIT_PER_MINUTE=90
+APP_ENV=development
+CORS_ORIGINS=http://127.0.0.1:4175,http://localhost:4175
+ALLOWED_HOSTS=127.0.0.1,localhost,api,frontend
 ```
 
 ## Run Frontend
@@ -45,6 +48,25 @@ RATE_LIMIT_PER_MINUTE=90
 cd frontend
 npm ci
 npm run dev -- --host 0.0.0.0 --port 4175
+```
+
+## Run Production Stack
+
+```bash
+cp .env.example .env
+# Edit .env and set APP_ENV=production plus RESEARCH_API_KEY before first deploy
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+Production endpoints:
+
+1. Frontend: http://127.0.0.1:4175
+2. API via frontend proxy: http://127.0.0.1:4175/api/health
+
+Optional monitoring profile:
+
+```bash
+docker compose -f docker-compose.prod.yml --profile monitoring up -d
 ```
 
 ## Visual Evidence
@@ -92,6 +114,10 @@ cd frontend
 npm ci
 npm run build
 npm audit --omit=dev --audit-level=high
+
+# container images
+docker build -f Dockerfile -t agentic-research-assistant-api:local .
+docker build -f frontend/Dockerfile --build-arg VITE_API_URL=/api -t agentic-research-assistant-frontend:local frontend
 ```
 
 Expected outcome:
@@ -114,6 +140,13 @@ Expected outcome:
 5. `docs/PROMPT_GUIDE.md`
 6. `.claude/CLAUDE.md`
 7. `.github/workflows/release.yml`
+
+## Deployment Artifacts
+
+1. `Dockerfile` (backend production image)
+2. `frontend/Dockerfile` (frontend production image)
+3. `frontend/nginx/default.conf` (SPA serving, API proxy, SSE-safe settings)
+4. `docker-compose.prod.yml` (production stack with health checks)
 
 ## Limits and Roadmap
 

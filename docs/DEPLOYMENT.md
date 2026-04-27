@@ -4,12 +4,41 @@
 ## Local Deployment
 
 1. Copy `.env.example` to `.env`.
-2. Start backend: `uvicorn api.main:app --host 0.0.0.0 --port 8002`.
-3. Start frontend: `cd frontend && npm run dev -- --host 0.0.0.0 --port 4175`.
-4. Validate:
-1. `GET /health`
-2. `POST /research/run`
-3. `GET /research` SSE from UI
+2. Install backend dependencies: `pip install -r requirements.txt`.
+3. Install frontend dependencies: `cd frontend && npm ci`.
+4. Start backend: `uvicorn api.main:app --host 0.0.0.0 --port 8002`.
+5. Start frontend: `cd frontend && npm run dev -- --host 0.0.0.0 --port 4175`.
+6. Validate `GET /health`.
+7. Validate `POST /research/run`.
+8. Validate `GET /research` SSE from UI.
+
+## Production Deployment (Docker Compose)
+
+1. Copy `.env.example` to `.env`.
+2. Set `APP_ENV=production`.
+3. Set `RESEARCH_API_KEY=<strong-random-value>`.
+4. Set `CORS_ORIGINS=https://<your-frontend-domain>`.
+5. Set `ALLOWED_HOSTS=<your-frontend-domain>,frontend`.
+6. Set `VITE_API_URL=/api`.
+7. Start stack: `docker compose -f docker-compose.prod.yml up -d --build`.
+8. Validate frontend health: `curl http://127.0.0.1:4175/healthz`.
+9. Validate API health via proxy: `curl http://127.0.0.1:4175/api/health`.
+10. Optional monitoring profile: `docker compose -f docker-compose.prod.yml --profile monitoring up -d`.
+
+## Production Deployment (Container Platform)
+
+Use images published by release workflow:
+
+1. `ghcr.io/<owner>/agentic-research-assistant-api:<tag>`
+2. `ghcr.io/<owner>/agentic-research-assistant-frontend:<tag>`
+
+Recommended runtime setup:
+
+1. Run frontend and backend on private network with only frontend exposed publicly.
+2. Terminate TLS at ingress/load balancer and forward `X-Forwarded-*` headers.
+3. Keep `/metrics` internal-only.
+4. Store `RESEARCH_API_KEY`, `TAVILY_API_KEY`, and provider credentials in a managed secret store.
+5. Use at least 2 backend replicas when high SSE concurrency is expected.
 
 ## Production Topology
 
@@ -26,13 +55,22 @@ Use autoscaling policies tuned for SSE connection concurrency and bursty sync qu
 
 1. `APP_NAME`
 2. `APP_VERSION`
-3. `RESEARCH_API_KEY` (optional; enables API key auth on protected research endpoints)
-4. `RATE_LIMIT_PER_MINUTE`
-5. `MAX_QUERY_LENGTH`
-6. `DEFAULT_MAX_SOURCES`
-7. `CORS_ORIGINS`
-8. `TAVILY_API_KEY`
-9. `VITE_API_URL`
+3. `APP_ENV` (`development` or `production`)
+4. `RESEARCH_API_KEY` (required in production when `ENFORCE_API_KEY_IN_PRODUCTION=true`)
+5. `RATE_LIMIT_PER_MINUTE`
+6. `MAX_QUERY_LENGTH`
+7. `DEFAULT_MAX_SOURCES`
+8. `CORS_ORIGINS`
+9. `ALLOWED_HOSTS`
+10. `ENFORCE_API_KEY_IN_PRODUCTION`
+11. `ENABLE_HSTS` (enable only behind HTTPS)
+12. `UVICORN_WORKERS`
+13. `FORWARDED_ALLOW_IPS`
+14. `TAVILY_API_KEY`
+15. `VITE_API_URL`
+16. `FRONTEND_PORT`
+17. `PROMETHEUS_PORT`
+18. `APP_IMAGE_TAG`
 
 ## Production Considerations
 
@@ -46,15 +84,17 @@ Use autoscaling policies tuned for SSE connection concurrency and bursty sync qu
 
 1. Enforce `RESEARCH_API_KEY` for protected endpoints in non-local environments.
 2. Set strict `MAX_QUERY_LENGTH` and `DEFAULT_MAX_SOURCES` values based on cost/risk constraints.
-3. Configure WAF and rate-limit controls at edge and application layers.
-4. Ensure trace payload logs omit secrets and sensitive user data.
-5. Pin dependency and container versions in deployment manifests.
+3. Ensure `APP_ENV=production` and avoid wildcard values in `CORS_ORIGINS` and `ALLOWED_HOSTS`.
+4. Configure WAF and rate-limit controls at edge and application layers.
+5. Ensure trace payload logs omit secrets and sensitive user data.
+6. Pin dependency and container versions in deployment manifests.
+7. Keep public exposure limited to the frontend container or ingress service.
 
 ## CI and Release
 
 1. CI workflow: `.github/workflows/ci.yml`
 2. Release workflow: `.github/workflows/release.yml`
-3. Release tags: `v*.*.*` trigger test/build/audit gates before publication.
+3. Release tags: `v*.*.*` trigger test/build/audit gates and publish GHCR images.
 
 ## Rollback
 
