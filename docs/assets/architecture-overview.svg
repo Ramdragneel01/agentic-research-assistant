@@ -1,0 +1,63 @@
+<svg width="1200" height="680" viewBox="0 0 1200 680" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">agentic-research-assistant architecture overview</title>
+  <desc id="desc">Frontend and API flow through Searcher, Summarizer, and Critic agents with SSE traces and metrics.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1324"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#111827"/>
+      <stop offset="100%" stop-color="#1f2937"/>
+    </linearGradient>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#38bdf8"/>
+    </marker>
+    <style>
+      .title { font: 700 34px 'Segoe UI', Arial, sans-serif; fill: #f8fafc; }
+      .subtitle { font: 500 18px 'Segoe UI', Arial, sans-serif; fill: #cbd5e1; }
+      .head { font: 700 21px 'Segoe UI', Arial, sans-serif; fill: #e2e8f0; }
+      .body { font: 500 15px 'Segoe UI', Arial, sans-serif; fill: #cbd5e1; }
+      .edge { stroke: #38bdf8; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .edge2 { stroke: #34d399; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect width="1200" height="680" fill="url(#bg)"/>
+  <text x="50" y="60" class="title">agentic-research-assistant Architecture</text>
+  <text x="50" y="92" class="subtitle">Guardrailed multi-agent workflow with SSE trace streaming and operational telemetry</text>
+
+  <rect x="58" y="172" width="260" height="160" rx="16" fill="url(#card)" stroke="#334155"/>
+  <text x="82" y="216" class="head">React Frontend</text>
+  <text x="82" y="248" class="body">Research query input</text>
+  <text x="82" y="272" class="body">SSE trace rendering</text>
+
+  <rect x="372" y="128" width="330" height="252" rx="16" fill="url(#card)" stroke="#1d4ed8"/>
+  <text x="396" y="172" class="head">FastAPI Gateway</text>
+  <text x="396" y="204" class="body">/research (SSE)</text>
+  <text x="396" y="228" class="body">/research/run (sync)</text>
+  <text x="396" y="252" class="body">Guardrails + API key + rate limit</text>
+  <text x="396" y="276" class="body">Request IDs + security headers</text>
+
+  <rect x="760" y="108" width="360" height="130" rx="16" fill="url(#card)" stroke="#7c3aed"/>
+  <text x="784" y="152" class="head">Searcher Agent</text>
+  <text x="784" y="184" class="body">Tavily or deterministic fallback</text>
+
+  <rect x="760" y="270" width="360" height="130" rx="16" fill="url(#card)" stroke="#0891b2"/>
+  <text x="784" y="314" class="head">Summarizer Agent</text>
+  <text x="784" y="346" class="body">Evidence synthesis with references</text>
+
+  <rect x="760" y="432" width="360" height="130" rx="16" fill="url(#card)" stroke="#047857"/>
+  <text x="784" y="476" class="head">Critic Agent</text>
+  <text x="784" y="508" class="body">Confidence, gaps, and verdict</text>
+
+  <rect x="372" y="440" width="330" height="150" rx="16" fill="url(#card)" stroke="#0ea5e9"/>
+  <text x="396" y="484" class="head">Metrics + Health</text>
+  <text x="396" y="516" class="body">Prometheus /metrics and /health</text>
+
+  <path class="edge" d="M318 252 L372 252"/>
+  <path class="edge" d="M702 190 L760 172"/>
+  <path class="edge" d="M702 254 L760 334"/>
+  <path class="edge" d="M702 316 L760 496"/>
+  <path class="edge2" d="M537 380 L537 440"/>
+</svg>

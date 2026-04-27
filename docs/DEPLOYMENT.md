@@ -7,9 +7,20 @@
 2. Start backend: `uvicorn api.main:app --host 0.0.0.0 --port 8002`.
 3. Start frontend: `cd frontend && npm run dev -- --host 0.0.0.0 --port 4175`.
 4. Validate:
-   - `GET /health`
-   - `POST /research/run`
-   - `GET /research` SSE from UI
+1. `GET /health`
+2. `POST /research/run`
+3. `GET /research` SSE from UI
+
+## Production Topology
+
+Recommended layout:
+
+1. Frontend static bundle served through CDN.
+2. FastAPI backend behind HTTPS ingress with request limits and timeouts.
+3. Agent API keys and secrets from managed secret store.
+4. Prometheus scraping `/metrics` over restricted internal network paths.
+
+Use autoscaling policies tuned for SSE connection concurrency and bursty sync query load.
 
 ## Environment Variables
 
@@ -31,13 +42,23 @@
 4. Use managed secret store for API keys.
 5. Validate SSE timeout and client reconnect policies under load.
 
+## Deployment Hardening Checklist
+
+1. Enforce `RESEARCH_API_KEY` for protected endpoints in non-local environments.
+2. Set strict `MAX_QUERY_LENGTH` and `DEFAULT_MAX_SOURCES` values based on cost/risk constraints.
+3. Configure WAF and rate-limit controls at edge and application layers.
+4. Ensure trace payload logs omit secrets and sensitive user data.
+5. Pin dependency and container versions in deployment manifests.
+
 ## CI and Release
 
 1. CI workflow: `.github/workflows/ci.yml`
 2. Release workflow: `.github/workflows/release.yml`
+3. Release tags: `v*.*.*` trigger test/build/audit gates before publication.
 
 ## Rollback
 
 1. Deploy previous tagged image/version.
 2. Verify `/health` and `/research/run` smoke checks.
 3. Confirm frontend can consume streamed trace events.
+4. Validate fallback offline search behavior remains functional after rollback.

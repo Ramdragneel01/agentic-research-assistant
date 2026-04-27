@@ -3,6 +3,9 @@
 
 Production-ready multi-agent research system with LangGraph orchestration, real-time SSE traces, guardrails, and operational monitoring.
 
+![CI Status](https://github.com/Ramdragneel01/agentic-research-assistant/actions/workflows/ci.yml/badge.svg)
+![Release Status](https://github.com/Ramdragneel01/agentic-research-assistant/actions/workflows/release.yml/badge.svg)
+
 ## Implemented Scope
 
 1. Searcher, Summarizer, and Critic agents with structured trace events.
@@ -44,6 +47,16 @@ npm ci
 npm run dev -- --host 0.0.0.0 --port 4175
 ```
 
+## Visual Evidence
+
+Architecture overview:
+
+![agentic-research-assistant architecture overview](docs/assets/architecture-overview.svg)
+
+Trace console preview:
+
+![agentic-research-assistant trace console preview](docs/assets/trace-console-preview.svg)
+
 ## API Endpoints
 
 1. `GET /health`
@@ -61,6 +74,32 @@ pytest -q
 cd frontend && npm run build
 ```
 
+## Production Verification
+
+Run before creating release tags:
+
+```bash
+# backend
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+python -m compileall -q api agents tests tools
+python -m pip check
+pytest -q --maxfail=1
+pip-audit -r requirements.txt --progress-spinner off
+
+# frontend
+cd frontend
+npm ci
+npm run build
+npm audit --omit=dev --audit-level=high
+```
+
+Expected outcome:
+
+1. Backend compile, tests, and dependency checks pass.
+2. Frontend production build completes successfully.
+3. Dependency audits show no high-severity blockers.
+
 ## Local Service Endpoints
 
 1. API: http://127.0.0.1:8002
@@ -75,3 +114,16 @@ cd frontend && npm run build
 5. `docs/PROMPT_GUIDE.md`
 6. `.claude/CLAUDE.md`
 7. `.github/workflows/release.yml`
+
+## Limits and Roadmap
+
+Current limits:
+
+1. Current orchestration executes a fixed three-agent sequence.
+2. Live external search quality depends on provider API availability and quotas.
+
+Roadmap:
+
+1. Add retrieval provider abstraction with ranked source fusion.
+2. Add policy-driven redaction for sensitive snippets in traces.
+3. Add latency-budget controls and adaptive source count selection.

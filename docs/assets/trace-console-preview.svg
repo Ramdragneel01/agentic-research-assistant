@@ -1,0 +1,45 @@
+<svg width="1200" height="680" viewBox="0 0 1200 680" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">agentic-research-assistant trace console preview</title>
+  <desc id="desc">Illustrative trace console with streaming Searcher, Summarizer, and Critic events.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#030712"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#111827"/>
+      <stop offset="100%" stop-color="#1f2937"/>
+    </linearGradient>
+    <style>
+      .title { font: 700 31px 'Segoe UI', Arial, sans-serif; fill: #f8fafc; }
+      .meta { font: 500 16px 'Segoe UI', Arial, sans-serif; fill: #cbd5e1; }
+      .label { font: 700 15px 'Segoe UI', Arial, sans-serif; fill: #e5e7eb; }
+      .text { font: 500 14px 'Segoe UI', Arial, sans-serif; fill: #cbd5e1; }
+    </style>
+  </defs>
+
+  <rect width="1200" height="680" fill="url(#bg)"/>
+  <text x="48" y="60" class="title">agentic-research-assistant Trace Console Preview</text>
+  <text x="48" y="90" class="meta">Illustrative SSE event flow and grounded answer assembly</text>
+
+  <rect x="44" y="126" width="1112" height="510" rx="14" fill="url(#panel)" stroke="#334155"/>
+
+  <rect x="70" y="156" width="1064" height="78" rx="10" fill="#0f172a" stroke="#334155"/>
+  <text x="92" y="188" class="text">Query: Compare zero-trust implementation patterns for regulated enterprise APIs</text>
+  <text x="92" y="214" class="text">Request ID: req_72d9b4a1</text>
+
+  <rect x="70" y="258" width="1064" height="96" rx="10" fill="#0f172a" stroke="#1d4ed8"/>
+  <text x="92" y="286" class="label">Searcher • retrieval • 118 ms</text>
+  <text x="92" y="314" class="text">Retrieved candidate evidence sources (5)</text>
+  <text x="92" y="338" class="text">Titles: NIST SP 800-207, CISA Zero Trust Maturity Model, OWASP API Security</text>
+
+  <rect x="70" y="372" width="1064" height="96" rx="10" fill="#0f172a" stroke="#0891b2"/>
+  <text x="92" y="400" class="label">Summarizer • synthesis • 227 ms</text>
+  <text x="92" y="428" class="text">Built structured research brief with references and implementation trade-offs</text>
+  <text x="92" y="452" class="text">Summary length: 1246 chars, references included: true</text>
+
+  <rect x="70" y="486" width="1064" height="96" rx="10" fill="#0f172a" stroke="#047857"/>
+  <text x="92" y="514" class="label">Critic • review • 84 ms</text>
+  <text x="92" y="542" class="text">Evaluated confidence and evidence coverage</text>
+  <text x="92" y="566" class="text">Verdict: sufficient-evidence, confidence: 0.86, identified gaps: 1</text>
+</svg>
