@@ -89,7 +89,7 @@ jobs:
   container-build:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    needs: [backend-tests, frontend-build]
+    needs: [ backend-tests, frontend-build ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -98,4 +98,5 @@ jobs:
         run: docker build -f Dockerfile -t agentic-research-assistant-api:ci .
 
       - name: Build frontend production image
-        run: docker build -f frontend/Dockerfile --build-arg VITE_API_URL=/api -t agentic-research-assistant-frontend:ci frontend
+        run: docker build -f frontend/Dockerfile --build-arg VITE_API_URL=/api -t
+          agentic-research-assistant-frontend:ci frontend

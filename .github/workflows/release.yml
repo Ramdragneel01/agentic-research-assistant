@@ -87,7 +87,8 @@ jobs:
         id: meta_frontend
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/agentic-research-assistant-frontend
+          images: ghcr.io/${{ github.repository_owner
+            }}/agentic-research-assistant-frontend
           tags: |
             type=ref,event=tag
             type=raw,value=latest
