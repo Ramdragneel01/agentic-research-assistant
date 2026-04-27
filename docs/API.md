@@ -18,8 +18,9 @@ Response fields:
 1. `status`
 2. `timestamp`
 3. `app_version`
-4. `rate_limit_per_minute`
-5. `max_query_length`
+4. `environment`
+5. `rate_limit_per_minute`
+6. `max_query_length`
 
 ## POST /research/run
 
@@ -66,3 +67,4 @@ Error payload shape:
 Additional protected-endpoint errors:
 1. `401 Unauthorized` when API key is required and missing/invalid.
 2. `429 Too Many Requests` when per-client rate limit is exceeded.
+3. `400 Bad Request` when host header is not in configured `ALLOWED_HOSTS`.

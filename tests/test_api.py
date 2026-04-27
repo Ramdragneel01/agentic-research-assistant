@@ -40,6 +40,7 @@ def test_health_endpoint_reports_runtime_limits():
 
     payload = response.json()
     assert payload["status"] == "ok"
+    assert payload["environment"]
     assert payload["rate_limit_per_minute"] > 0
     assert payload["max_query_length"] >= 100
 
