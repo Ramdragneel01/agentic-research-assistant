@@ -85,3 +85,17 @@ jobs:
         uses: actions/dependency-review-action@v4
         with:
           fail-on-severity: high
+
+  container-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: [backend-tests, frontend-build]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build backend production image
+        run: docker build -f Dockerfile -t agentic-research-assistant-api:ci .
+
+      - name: Build frontend production image
+        run: docker build -f frontend/Dockerfile --build-arg VITE_API_URL=/api -t agentic-research-assistant-frontend:ci frontend
