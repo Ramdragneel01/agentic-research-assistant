@@ -5,23 +5,7 @@ import TraceCard from "./components/TraceCard";
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8002").replace(/\/$/, "");
 const SOURCE_OPTIONS = [3, 4, 5, 6, 7, 8];
-const STYLE_OPTIONS = [
-  {
-    id: "corporate",
-    label: "Corporate",
-    hint: "Minimal, clean, and presentation-ready for stakeholder demos.",
-  },
-  {
-    id: "futuristic",
-    label: "Futuristic",
-    hint: "Sharper contrast, brighter accents, and high-tech console energy.",
-  },
-  {
-    id: "editorial",
-    label: "Editorial",
-    hint: "Warm surfaces, serif-forward hierarchy, and report-style readability.",
-  },
-];
+const LOCKED_STYLE_MODE = "corporate";
 
 /**
  * Return CSS class token for status pill based on current run state.
@@ -49,14 +33,9 @@ function App() {
   const [errorMessage, setErrorMessage] = useState("");
   const [metadata, setMetadata] = useState(null);
   const [running, setRunning] = useState(false);
-  const [styleMode, setStyleMode] = useState("corporate");
 
   const canRun = useMemo(() => query.trim().length >= 3 && !running, [query, running]);
   const statusTone = useMemo(() => getStatusTone(status, running, errorMessage), [status, running, errorMessage]);
-  const styleMeta = useMemo(
-    () => STYLE_OPTIONS.find((option) => option.id === styleMode) || STYLE_OPTIONS[0],
-    [styleMode],
-  );
 
   /**
    * Close active EventSource stream and clear reference.
@@ -126,42 +105,24 @@ function App() {
   useEffect(() => () => stopStream(), []);
 
   useEffect(() => {
-    document.body.dataset.styleMode = styleMode;
+    document.body.dataset.styleMode = LOCKED_STYLE_MODE;
 
     return () => {
       delete document.body.dataset.styleMode;
     };
-  }, [styleMode]);
+  }, []);
 
   return (
-    <main className={`app-shell app-shell--${styleMode}`}>
+    <main className={`app-shell app-shell--${LOCKED_STYLE_MODE}`}>
       <div className="ambient-shape ambient-shape--one" aria-hidden="true" />
       <div className="ambient-shape ambient-shape--two" aria-hidden="true" />
 
       <header className="hero">
-        <p className="hero-kicker">Agentic Workflow Console</p>
-        <h1>Research Cockpit</h1>
+        <p className="hero-kicker">Enterprise Buyer Console</p>
+        <h1>Research Cockpit For Decision Teams</h1>
         <p className="hero-copy">
-          Run orchestrated Searcher, Summarizer, and Critic agents with live telemetry and source-grounded output.
+          Evaluate solution fit with source-grounded insights, trace-level transparency, and stakeholder-ready output.
         </p>
-
-        <section className="style-switch" aria-label="Visual style preference">
-          <p className="style-switch-label">Visual Mood</p>
-          <div className="style-switch-buttons" role="group" aria-label="Theme selector">
-            {STYLE_OPTIONS.map((option) => (
-              <button
-                key={option.id}
-                type="button"
-                className={`style-btn ${styleMode === option.id ? "style-btn--active" : ""}`}
-                onClick={() => setStyleMode(option.id)}
-                aria-pressed={styleMode === option.id}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-          <p className="style-switch-hint">{styleMeta.hint}</p>
-        </section>
 
         <div className="hero-metrics" aria-label="Runtime metrics">
           <article className="metric-tile">
@@ -173,7 +134,7 @@ function App() {
             <p className="metric-value">{maxSources}</p>
           </article>
           <article className="metric-tile">
-            <p className="metric-label">State</p>
+            <p className="metric-label">Session</p>
             <p className="metric-value">{running ? "Running" : "Ready"}</p>
           </article>
         </div>
@@ -182,8 +143,8 @@ function App() {
       <div className="layout-grid">
         <section className="panel panel--controls" aria-label="Research controls">
           <div className="panel-title-wrap">
-            <h2>Run Research</h2>
-            <p>Ask a focused question, then inspect trace-by-trace reasoning.</p>
+            <h2>Run Buyer-Facing Research</h2>
+            <p>Ask focused procurement questions and review evidence trace by trace before presenting recommendations.</p>
           </div>
 
           <label className="field-label" htmlFor="query-input">
@@ -246,7 +207,7 @@ function App() {
 
         <section className="panel panel--trace" aria-label="Trace stream">
           <div className="trace-header">
-            <h2>Execution Trace</h2>
+            <h2>Audit Trace</h2>
             <span className="trace-count" aria-label="Trace event count">
               {events.length}
             </span>
@@ -263,7 +224,7 @@ function App() {
       {answer && (
         <section className="panel panel--answer" aria-label="Final answer">
           <div className="answer-header">
-            <h2>Final Answer</h2>
+            <h2>Executive Brief</h2>
             <p>
               {Number(answer.duration_ms).toFixed(1)} ms | {answer.trace_count} traces
             </p>
