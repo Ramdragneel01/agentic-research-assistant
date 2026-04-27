@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import TraceCard from "./components/TraceCard";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8002";
+const API_BASE_URL = (import.meta.env.VITE_API_URL || "http://127.0.0.1:8002").replace(/\/$/, "");
 
 function App() {
   const streamRef = useRef(null);
