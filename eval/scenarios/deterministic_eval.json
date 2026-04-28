@@ -1,0 +1,32 @@
+[
+  {
+    "id": "det-small-001",
+    "seed": 42,
+    "query": "Prioritize zero trust controls for enterprise onboarding",
+    "max_sources": 8,
+    "execution_tier": "small",
+    "expected_verdict": "sufficient",
+    "expected_min_confidence": 0.8,
+    "expected_min_citation_match": 0.95
+  },
+  {
+    "id": "det-medium-001",
+    "seed": 42,
+    "query": "Compare secure API gateway patterns for regulated workloads",
+    "max_sources": 8,
+    "execution_tier": "medium",
+    "expected_verdict": "sufficient",
+    "expected_min_confidence": 0.8,
+    "expected_min_citation_match": 0.75
+  },
+  {
+    "id": "det-large-001",
+    "seed": 42,
+    "query": "Design a threat-informed monitoring strategy for cloud microservices",
+    "max_sources": 8,
+    "execution_tier": "large",
+    "expected_verdict": "sufficient",
+    "expected_min_confidence": 0.8,
+    "expected_min_citation_match": 0.75
+  }
+]
