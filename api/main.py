@@ -23,7 +23,7 @@ from pydantic import BaseModel, Field
 from sse_starlette.sse import EventSourceResponse
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-from agents.graph import build_graph, run_research, stream_research
+from agents.graph import build_graph, resolve_execution_budget, run_research, stream_research
 
 
 @dataclass(frozen=True)
@@ -38,6 +38,7 @@ class Settings:
     rate_limit_per_minute: int
     max_query_length: int
     default_max_sources: int
+    default_execution_tier: str
     api_key: str
     enforce_api_key_in_production: bool
     enable_hsts: bool
@@ -83,6 +84,7 @@ class HealthResponse(BaseModel):
     environment: str
     rate_limit_per_minute: int
     max_query_length: int
+    default_execution_tier: str
 
 
 class ResearchRequest(BaseModel):
@@ -90,12 +92,15 @@ class ResearchRequest(BaseModel):
 
     query: str = Field(min_length=3, max_length=800)
     max_sources: int = Field(default=5, ge=1, le=8)
+    execution_tier: str | None = Field(default=None, pattern="^(small|medium|large)$")
 
 
 class ResearchAnswer(BaseModel):
     """Normalized final answer payload returned by research endpoints."""
 
     query: str
+    execution_tier: str
+    source_budget: int
     summary: str
     critique: dict[str, object]
     sources: list[dict[str, str]]
@@ -136,6 +141,10 @@ def _validate_settings(runtime_settings: Settings) -> None:
         raise RuntimeError("MAX_QUERY_LENGTH must be at least 64")
     if runtime_settings.default_max_sources < 1 or runtime_settings.default_max_sources > 8:
         raise RuntimeError("DEFAULT_MAX_SOURCES must be between 1 and 8")
+    resolve_execution_budget(
+        max_sources=runtime_settings.default_max_sources,
+        execution_tier=runtime_settings.default_execution_tier,
+    )
     if not runtime_settings.cors_origins:
         raise RuntimeError("CORS_ORIGINS must include at least one origin")
     if not runtime_settings.allowed_hosts:
@@ -164,6 +173,7 @@ def _load_settings() -> Settings:
         rate_limit_per_minute=int(os.getenv("RATE_LIMIT_PER_MINUTE", "90")),
         max_query_length=int(os.getenv("MAX_QUERY_LENGTH", "800")),
         default_max_sources=int(os.getenv("DEFAULT_MAX_SOURCES", "5")),
+        default_execution_tier=os.getenv("DEFAULT_EXECUTION_TIER", "medium").strip().lower(),
         api_key=os.getenv("RESEARCH_API_KEY", "").strip(),
         enforce_api_key_in_production=_parse_bool(os.getenv("ENFORCE_API_KEY_IN_PRODUCTION"), default=True),
         enable_hsts=_parse_bool(os.getenv("ENABLE_HSTS"), default=False),
@@ -288,6 +298,7 @@ def health() -> HealthResponse:
         environment=settings.environment,
         rate_limit_per_minute=settings.rate_limit_per_minute,
         max_query_length=settings.max_query_length,
+        default_execution_tier=settings.default_execution_tier,
     )
 
 
@@ -299,10 +310,21 @@ def research_run(request: Request, payload: ResearchRequest, _: AuthDep = None) 
         raise HTTPException(status_code=429, detail="Rate limit exceeded")
 
     query = _guard_query(payload.query, settings.max_query_length)
-    result = run_research(query=query, max_sources=payload.max_sources, compiled_graph=compiled_graph)
+    execution_tier, source_budget = resolve_execution_budget(
+        max_sources=payload.max_sources,
+        execution_tier=payload.execution_tier or settings.default_execution_tier,
+    )
+    result = run_research(
+        query=query,
+        max_sources=source_budget,
+        compiled_graph=compiled_graph,
+        execution_tier=execution_tier,
+    )
     request_id = str(request.state.request_id)
     return ResearchAnswer(
         query=result["query"],
+        execution_tier=str(result["execution_tier"]),
+        source_budget=int(result["source_budget"]),
         summary=result["summary"],
         critique=result["critique"],
         sources=result["sources"],
@@ -319,6 +341,7 @@ def research(
     _: AuthDep = None,
     query: str = Query(..., min_length=3, max_length=800),
     max_sources: int = Query(default=settings.default_max_sources, ge=1, le=8),
+    execution_tier: str = Query(default=settings.default_execution_tier, pattern="^(small|medium|large)$"),
 ) -> EventSourceResponse:
     """Stream agent-by-agent execution trace and final answer for a query."""
 
@@ -326,6 +349,10 @@ def research(
         raise HTTPException(status_code=429, detail="Rate limit exceeded")
 
     sanitized_query = _guard_query(query, settings.max_query_length)
+    resolved_tier, source_budget = resolve_execution_budget(
+        max_sources=max_sources,
+        execution_tier=execution_tier,
+    )
     request_id = str(request.state.request_id)
 
     async def event_generator():
@@ -335,6 +362,8 @@ def research(
                 {
                     "request_id": request_id,
                     "query": sanitized_query,
+                    "execution_tier": resolved_tier,
+                    "source_budget": source_budget,
                     "started_at": datetime.now(timezone.utc).isoformat(),
                 },
                 ensure_ascii=True,
@@ -342,7 +371,12 @@ def research(
         }
 
         try:
-            for item in stream_research(sanitized_query, max_sources=max_sources, compiled_graph=compiled_graph):
+            for item in stream_research(
+                sanitized_query,
+                max_sources=source_budget,
+                compiled_graph=compiled_graph,
+                execution_tier=resolved_tier,
+            ):
                 if item["type"] == "trace":
                     payload = dict(item["payload"])
                     payload["request_id"] = request_id

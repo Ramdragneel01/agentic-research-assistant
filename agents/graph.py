@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from time import perf_counter
-from typing import TypedDict
+from typing import Literal, TypedDict
 
 from langgraph.graph import END, StateGraph
 
@@ -30,10 +30,21 @@ class AgentState(TypedDict, total=False):
 
     query: str
     max_sources: int
+    execution_tier: str
+    source_budget: int
     sources: list[dict[str, str]]
     summary: str
     critique: dict[str, object]
     traces: list[TraceEvent]
+
+
+ExecutionTier = Literal["small", "medium", "large"]
+
+EXECUTION_TIER_BUDGETS: dict[ExecutionTier, int] = {
+    "small": 3,
+    "medium": 5,
+    "large": 8,
+}
 
 
 def _utc_now() -> str:
@@ -55,12 +66,28 @@ def _trace(agent: str, stage: str, message: str, payload: dict[str, object], sta
     }
 
 
+def resolve_execution_budget(max_sources: int, execution_tier: str | None) -> tuple[ExecutionTier, int]:
+    """Resolve effective source budget from tier and requested max sources."""
+
+    normalized_tier = str(execution_tier or "medium").strip().lower()
+    if normalized_tier not in EXECUTION_TIER_BUDGETS:
+        raise ValueError("execution_tier must be one of: small, medium, large")
+
+    tier = normalized_tier  # type: ignore[assignment]
+    tier_budget = EXECUTION_TIER_BUDGETS[tier]
+
+    bounded_requested = max(1, min(int(max_sources or tier_budget), 8))
+    source_budget = min(bounded_requested, tier_budget)
+    return tier, source_budget
+
+
 def searcher_node(state: AgentState) -> AgentState:
     """Fetch candidate sources for the user query."""
 
     started_at = perf_counter()
     query = state.get("query", "")
     max_sources = int(state.get("max_sources", 5) or 5)
+    execution_tier = str(state.get("execution_tier", "medium"))
     sources = search_sources(query, limit=max_sources)
 
     event = _trace(
@@ -69,6 +96,8 @@ def searcher_node(state: AgentState) -> AgentState:
         message="Retrieved candidate evidence sources",
         payload={
             "source_count": len(sources),
+            "source_budget": max_sources,
+            "execution_tier": execution_tier,
             "titles": [item.get("title", "Untitled") for item in sources[:4]],
         },
         started_at=started_at,
@@ -135,21 +164,30 @@ def build_graph():
     return graph.compile()
 
 
-def run_research(query: str, max_sources: int, compiled_graph=None) -> dict[str, object]:
+def run_research(
+    query: str,
+    max_sources: int,
+    compiled_graph=None,
+    execution_tier: str = "medium",
+) -> dict[str, object]:
     """Execute LangGraph workflow once and return final answer plus trace events."""
 
     graph = compiled_graph or build_graph()
-    bounded_sources = max(1, min(max_sources, 8))
+    tier, source_budget = resolve_execution_budget(max_sources=max_sources, execution_tier=execution_tier)
 
     initial_state: AgentState = {
         "query": query,
-        "max_sources": bounded_sources,
+        "max_sources": source_budget,
+        "execution_tier": tier,
+        "source_budget": source_budget,
         "traces": [],
     }
 
     final_state: AgentState = {
         "query": query,
-        "max_sources": bounded_sources,
+        "max_sources": source_budget,
+        "execution_tier": tier,
+        "source_budget": source_budget,
         "sources": [],
         "summary": "",
         "critique": {},
@@ -172,6 +210,8 @@ def run_research(query: str, max_sources: int, compiled_graph=None) -> dict[str,
     duration_ms = round((perf_counter() - started_at) * 1000, 2)
     return {
         "query": query,
+        "execution_tier": tier,
+        "source_budget": source_budget,
         "sources": final_state.get("sources", []),
         "summary": final_state.get("summary", ""),
         "critique": final_state.get("critique", {}),
@@ -180,21 +220,30 @@ def run_research(query: str, max_sources: int, compiled_graph=None) -> dict[str,
     }
 
 
-def stream_research(query: str, max_sources: int, compiled_graph=None):
+def stream_research(
+    query: str,
+    max_sources: int,
+    compiled_graph=None,
+    execution_tier: str = "medium",
+):
     """Yield trace events and final answer from a single workflow execution."""
 
     graph = compiled_graph or build_graph()
-    bounded_sources = max(1, min(max_sources, 8))
+    tier, source_budget = resolve_execution_budget(max_sources=max_sources, execution_tier=execution_tier)
 
     initial_state: AgentState = {
         "query": query,
-        "max_sources": bounded_sources,
+        "max_sources": source_budget,
+        "execution_tier": tier,
+        "source_budget": source_budget,
         "traces": [],
     }
 
     final_state: AgentState = {
         "query": query,
-        "max_sources": bounded_sources,
+        "max_sources": source_budget,
+        "execution_tier": tier,
+        "source_budget": source_budget,
         "sources": [],
         "summary": "",
         "critique": {},
@@ -219,6 +268,8 @@ def stream_research(query: str, max_sources: int, compiled_graph=None):
     duration_ms = round((perf_counter() - started_at) * 1000, 2)
     answer = {
         "query": query,
+        "execution_tier": tier,
+        "source_budget": source_budget,
         "sources": final_state.get("sources", []),
         "summary": final_state.get("summary", ""),
         "critique": final_state.get("critique", {}),

@@ -43,6 +43,7 @@ def test_health_endpoint_reports_runtime_limits():
     assert payload["environment"]
     assert payload["rate_limit_per_minute"] > 0
     assert payload["max_query_length"] >= 100
+    assert payload["default_execution_tier"] in {"small", "medium", "large"}
 
 
 def test_research_run_returns_answer_contract():
@@ -57,8 +58,11 @@ def test_research_run_returns_answer_contract():
     payload = response.json()
 
     assert payload["query"]
+    assert payload["execution_tier"] in {"small", "medium", "large"}
+    assert payload["source_budget"] >= 1
     assert payload["summary"]
     assert isinstance(payload["sources"], list)
+    assert len(payload["sources"]) <= payload["source_budget"]
     assert isinstance(payload["trace"], list)
     assert payload["trace_count"] == len(payload["trace"])
 
@@ -66,10 +70,34 @@ def test_research_run_returns_answer_contract():
 def test_research_sse_stream_returns_answer_event():
     """Streaming endpoint should emit event-stream payload with final answer event."""
 
-    response = client.get("/research", params={"query": "What is zero trust architecture?", "max_sources": 4})
+    response = client.get(
+        "/research",
+        params={"query": "What is zero trust architecture?", "max_sources": 6, "execution_tier": "small"},
+    )
     assert response.status_code == 200
     assert response.headers["content-type"].startswith("text/event-stream")
     assert "event: answer" in response.text
+    assert "execution_tier" in response.text
+    assert "small" in response.text
+
+
+def test_research_run_small_tier_caps_source_budget():
+    """Small tier should cap effective source budget even when max_sources is larger."""
+
+    response = client.post(
+        "/research/run",
+        json={
+            "query": "Compare zero trust and defense in depth",
+            "max_sources": 8,
+            "execution_tier": "small",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["execution_tier"] == "small"
+    assert payload["source_budget"] == 3
+    assert len(payload["sources"]) <= 3
 
 
 def test_research_run_requires_api_key_when_configured(monkeypatch):
