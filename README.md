@@ -14,7 +14,9 @@ Production-ready multi-agent research system with LangGraph orchestration, real-
 4. Input guardrails, request IDs, rate limiting, CORS allowlist, and security headers.
 5. React frontend for streaming trace cards and final source-grounded answer rendering.
 6. Integration and unit tests for API and agent behavior.
-7. Governance baseline: contributing, security, architecture, API, deployment, testing, changelog, prompt guide, templates, ownership.
+7. Execution budget modes with small, medium, and large source budgets.
+8. Deterministic evaluation harness for quality and citation-faithfulness checks.
+9. Governance baseline: contributing, security, architecture, API, deployment, testing, changelog, prompt guide, templates, ownership.
 
 ## Repository Layout
 
@@ -40,7 +42,14 @@ RATE_LIMIT_PER_MINUTE=90
 APP_ENV=development
 CORS_ORIGINS=http://127.0.0.1:4175,http://localhost:4175
 ALLOWED_HOSTS=127.0.0.1,localhost,api,frontend
+DEFAULT_EXECUTION_TIER=medium
 ```
+
+Execution budget tiers:
+
+1. small: source budget cap 3
+2. medium: source budget cap 5
+3. large: source budget cap 8
 
 ## Run Frontend
 
@@ -85,6 +94,20 @@ Trace console preview:
 2. `GET /research` (SSE stream, protected when API key is configured)
 3. `POST /research/run` (sync execution, protected when API key is configured)
 4. `GET /metrics`
+
+## Week 4 Reliability Additions
+
+1. Deterministic eval scenarios in `eval/scenarios/deterministic_eval.json`.
+2. Evaluation harness in `tools/evaluate_research.py`.
+3. Tool access boundary guidance in `docs/GUARDRAILS.md`.
+4. Trace walkthrough in `docs/TRACE_WALKTHROUGH.md`.
+5. Sequence diagram in `docs/SEQUENCE_DIAGRAM.md`.
+
+Run deterministic evaluation:
+
+```bash
+python tools/evaluate_research.py --scenario-file eval/scenarios/deterministic_eval.json --output-json eval/results/deterministic_eval_results.json
+```
 
 ## Validation Commands
 
@@ -138,8 +161,11 @@ Expected outcome:
 3. `docs/DEPLOYMENT.md`
 4. `docs/TESTING.md`
 5. `docs/PROMPT_GUIDE.md`
-6. `.claude/CLAUDE.md`
-7. `.github/workflows/release.yml`
+6. `docs/GUARDRAILS.md`
+7. `docs/TRACE_WALKTHROUGH.md`
+8. `docs/SEQUENCE_DIAGRAM.md`
+9. `.claude/CLAUDE.md`
+10. `.github/workflows/release.yml`
 
 ## Deployment Artifacts
 

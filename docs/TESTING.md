@@ -15,6 +15,8 @@ Coverage focus:
 6. Searcher fallback behavior.
 7. Summarizer section structure.
 8. Critic confidence/verdict behavior.
+9. Execution tier source-budget enforcement.
+10. Deterministic scenario threshold validation.
 
 ## Frontend Validation
 
@@ -33,3 +35,14 @@ Manual checks:
 2. `POST /research/run`
 3. `GET /research`
 4. `GET /metrics`
+
+## Deterministic Evaluation Harness
+
+Run:
+`python tools/evaluate_research.py --scenario-file eval/scenarios/deterministic_eval.json --output-json eval/results/deterministic_eval_results.json`
+
+Expected outcome:
+
+1. All deterministic scenarios pass.
+2. Citation match ratio meets per-scenario threshold.
+3. Verdict and confidence satisfy scenario expectations.

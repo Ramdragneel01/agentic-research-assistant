@@ -21,6 +21,7 @@ Response fields:
 4. `environment`
 5. `rate_limit_per_minute`
 6. `max_query_length`
+7. `default_execution_tier`
 
 ## POST /research/run
 
@@ -29,16 +30,19 @@ Runs full workflow synchronously.
 Request body:
 1. `query` (string, 3..800)
 2. `max_sources` (integer, 1..8)
+3. `execution_tier` (optional enum: `small`, `medium`, `large`)
 
 Response fields:
 1. `query`
-2. `summary`
-3. `critique`
-4. `sources`
-5. `trace`
-6. `trace_count`
-7. `duration_ms`
-8. `request_id`
+2. `execution_tier`
+3. `source_budget`
+4. `summary`
+5. `critique`
+6. `sources`
+7. `trace`
+8. `trace_count`
+9. `duration_ms`
+10. `request_id`
 
 ## GET /research (SSE)
 
@@ -47,12 +51,20 @@ Streams workflow traces and final answer.
 Query parameters:
 1. `query` (string, 3..800)
 2. `max_sources` (integer, 1..8)
+3. `execution_tier` (enum: `small`, `medium`, `large`)
 
 SSE events:
 1. `metadata`
 2. `trace`
 3. `answer`
 4. `error`
+
+Execution tier behavior:
+
+1. `small` caps source budget to 3.
+2. `medium` caps source budget to 5.
+3. `large` caps source budget to 8.
+4. Effective source budget is `min(max_sources, tier_budget)`.
 
 ## GET /metrics
 

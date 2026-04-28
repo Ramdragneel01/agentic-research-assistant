@@ -16,12 +16,20 @@
 2. Summarizer synthesizes structured brief from evidence.
 3. Critic evaluates confidence, coverage gaps, and revision recommendations.
 
+Execution budget modes:
+
+1. small tier caps source budget at 3.
+2. medium tier caps source budget at 5.
+3. large tier caps source budget at 8.
+4. Effective source budget is applied before graph execution and echoed in metadata/answer payloads.
+
 ## Data and Trace Flow
 
 1. UI submits research query through SSE endpoint.
 2. API validates and sanitizes query.
 3. Graph emits step traces (`trace` events) and one final `answer` event.
 4. UI renders trace cards in execution order and final answer with sources.
+5. Metadata includes execution_tier and source_budget for reproducibility.
 
 ## Reliability and Security Controls
 
@@ -30,3 +38,5 @@
 3. Request IDs for every API response.
 4. Security headers and CORS allowlist.
 5. Metrics endpoint for request counts and latency.
+6. Tool access boundaries are defined in `docs/GUARDRAILS.md`.
+7. Trace walkthrough and sequence documentation are available in `docs/TRACE_WALKTHROUGH.md` and `docs/SEQUENCE_DIAGRAM.md`.

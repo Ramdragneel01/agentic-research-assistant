@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720" role="img" aria-label="Agent trace walkthrough">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="720" fill="url(#bg)"/>
+
+  <rect x="40" y="34" width="1120" height="70" rx="10" fill="#111827" stroke="#334155"/>
+  <text x="72" y="78" font-family="Segoe UI, Arial, sans-serif" font-size="24" fill="#e2e8f0">Streaming Trace Walkthrough: metadata -> searcher -> summarizer -> critic -> answer</text>
+
+  <rect x="60" y="130" width="1080" height="92" rx="12" fill="#0b3b2e" stroke="#10b981"/>
+  <text x="84" y="168" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#d1fae5">metadata</text>
+  <text x="84" y="200" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#d1fae5">request_id, query, execution_tier=medium, source_budget=5</text>
+
+  <rect x="60" y="246" width="1080" height="92" rx="12" fill="#1f2937" stroke="#60a5fa"/>
+  <text x="84" y="284" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#bfdbfe">trace/searcher</text>
+  <text x="84" y="316" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#bfdbfe">source_count=5, titles=[NIST..., OWASP..., CISA...]</text>
+
+  <rect x="60" y="362" width="1080" height="92" rx="12" fill="#1f2937" stroke="#60a5fa"/>
+  <text x="84" y="400" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#bfdbfe">trace/summarizer</text>
+  <text x="84" y="432" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#bfdbfe">summary_length=1438, contains_references=true</text>
+
+  <rect x="60" y="478" width="1080" height="92" rx="12" fill="#1f2937" stroke="#60a5fa"/>
+  <text x="84" y="516" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#bfdbfe">trace/critic</text>
+  <text x="84" y="548" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#bfdbfe">verdict=sufficient, confidence=0.88, gap_count=0</text>
+
+  <rect x="60" y="594" width="1080" height="92" rx="12" fill="#1e1b4b" stroke="#a78bfa"/>
+  <text x="84" y="632" font-family="Segoe UI, Arial, sans-serif" font-size="22" fill="#e9d5ff">answer</text>
+  <text x="84" y="664" font-family="Segoe UI, Arial, sans-serif" font-size="18" fill="#e9d5ff">summary + critique + sources + trace_count + duration_ms</text>
+</svg>
