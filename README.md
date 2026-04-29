@@ -27,6 +27,24 @@ Production-ready multi-agent research system with LangGraph orchestration, real-
 5. `tests/` - backend API and agent unit/integration coverage.
 6. `docs/` - architecture, API, deployment, testing, and prompt governance.
 
+## Quick Start
+
+```bash
+# backend
+pip install -r requirements.txt
+uvicorn api.main:app --reload --port 8002
+
+# frontend
+cd frontend
+npm ci
+npm run dev -- --host 0.0.0.0 --port 4175
+```
+
+Then open:
+
+1. API health: http://127.0.0.1:8002/health
+2. Frontend console: http://127.0.0.1:4175
+
 ## Run Backend
 
 ```bash
@@ -119,6 +137,12 @@ pytest -q
 cd frontend && npm run build
 ```
 
+## Testing
+
+1. Run backend tests: `pytest -q`.
+2. Run frontend production build validation: `cd frontend && npm run build`.
+3. Run extended release checks in the Production Verification section before semantic tags.
+
 ## Production Verification
 
 Run before creating release tags:
@@ -174,14 +198,12 @@ Expected outcome:
 3. `frontend/nginx/default.conf` (SPA serving, API proxy, SSE-safe settings)
 4. `docker-compose.prod.yml` (production stack with health checks)
 
-## Limits and Roadmap
-
-Current limits:
+## Limitations
 
 1. Current orchestration executes a fixed three-agent sequence.
 2. Live external search quality depends on provider API availability and quotas.
 
-Roadmap:
+## Roadmap
 
 1. Add retrieval provider abstraction with ranked source fusion.
 2. Add policy-driven redaction for sensitive snippets in traces.
