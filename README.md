@@ -127,6 +127,12 @@ Run deterministic evaluation:
 python tools/evaluate_research.py --scenario-file eval/scenarios/deterministic_eval.json --output-json eval/results/deterministic_eval_results.json
 ```
 
+## Week 11 Measured Outcomes
+
+1. Before and after outcomes are documented in `docs/WEEK11_MEASURED_OUTCOMES.md`.
+2. Reliability evidence includes checklist retention, docs growth, workflow expansion, and test-surface growth.
+3. Cost-aware execution evidence includes source-budget tier charting (`small`, `medium`, `large`).
+
 ## Validation Commands
 
 ```bash
