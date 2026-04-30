@@ -46,6 +46,22 @@ def test_health_endpoint_reports_runtime_limits():
     assert payload["default_execution_tier"] in {"small", "medium", "large"}
 
 
+def test_probe_alias_and_ready_endpoints_report_runtime_state():
+    """Readiness and probe alias endpoints should be available for orchestrators."""
+
+    ready_response = client.get("/ready")
+    assert ready_response.status_code == 200
+    assert ready_response.json()["status"] == "ready"
+
+    health_alias = client.get("/healthz")
+    assert health_alias.status_code == 200
+    assert health_alias.json()["status"] == "ok"
+
+    ready_alias = client.get("/readyz")
+    assert ready_alias.status_code == 200
+    assert ready_alias.json()["status"] == "ready"
+
+
 def test_research_run_returns_answer_contract():
     """Synchronous research endpoint should return answer, critique, and traces."""
 
@@ -119,6 +135,25 @@ def test_research_run_requires_api_key_when_configured(monkeypatch):
     assert authorized.status_code == 200
 
 
+def test_phase1_auth_required_contract(monkeypatch):
+    """Phase-1 contract selector for auth-required protected endpoint behavior."""
+
+    _override_settings(monkeypatch, api_key="phase1-secret")
+
+    unauthorized = client.post(
+        "/research/run",
+        json={"query": "Compare modern API gateway patterns", "max_sources": 4},
+    )
+    assert unauthorized.status_code == 401
+
+    authorized = client.post(
+        "/research/run",
+        headers={"X-API-Key": "phase1-secret"},
+        json={"query": "Compare modern API gateway patterns", "max_sources": 4},
+    )
+    assert authorized.status_code == 200
+
+
 def test_health_is_public_when_api_key_enabled(monkeypatch):
     """Health endpoint should remain public for uptime checks."""
 
@@ -145,3 +180,17 @@ def test_research_run_rate_limit_returns_429(monkeypatch):
         json={"query": "Compare modern API gateway patterns", "max_sources": 4},
     )
     assert second.status_code == 429
+
+
+def test_phase1_error_contract_response():
+    """Phase-1 contract selector for structured validation error output."""
+
+    response = client.post(
+        "/research/run",
+        json={"query": "no", "max_sources": 4},
+    )
+
+    assert response.status_code == 422
+    payload = response.json()
+    assert "detail" in payload
+    assert response.headers.get("X-Request-ID")

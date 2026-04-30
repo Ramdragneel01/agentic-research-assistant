@@ -302,6 +302,33 @@ def health() -> HealthResponse:
     )
 
 
+@app.get("/healthz")
+def healthz() -> HealthResponse:
+    """Compatibility alias for liveness probes expecting /healthz."""
+
+    return health()
+
+
+@app.get("/ready")
+def ready() -> dict[str, object]:
+    """Return readiness state for deployment orchestrators."""
+
+    return {
+        "status": "ready",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "app_version": settings.app_version,
+        "environment": settings.environment,
+        "default_execution_tier": settings.default_execution_tier,
+    }
+
+
+@app.get("/readyz")
+def readyz() -> dict[str, object]:
+    """Compatibility alias for readiness probes expecting /readyz."""
+
+    return ready()
+
+
 @app.post("/research/run", response_model=ResearchAnswer)
 def research_run(request: Request, payload: ResearchRequest, _: AuthDep = None) -> ResearchAnswer:
     """Run research workflow synchronously for automation and integration tests."""
