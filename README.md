@@ -97,6 +97,10 @@ docker compose -f docker-compose.prod.yml --profile monitoring up -d
 
 ## Visual Evidence
 
+Agent trace demo:
+
+![agentic-research-assistant agent trace demo](docs/assets/demo-terminal.png)
+
 Architecture overview:
 
 ![agentic-research-assistant architecture overview](docs/assets/architecture-overview.svg)
